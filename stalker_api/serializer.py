@@ -6,6 +6,7 @@ class PersonSerializer(serializers.Serializer):
     '''
     Serializer for stalker_api/models/Person class.
     '''
+    pk = serializers.IntegerField(read_only=True)
     cc = serializers.CharField(required=False, allow_blank=True, max_length=20)
     cf = serializers.CharField(required=False, allow_blank=True, max_length=20)
     name = serializers.CharField(required=True)
@@ -14,10 +15,15 @@ class UserSerializer(serializers.Serializer):
     '''
     Serializer for django.contrib.auth.User class
     '''
-    username = serializers.CharField(max_length=50)
-    email    = serializers.EmailField()
-    password = serializers.CharField(style={'input_type': 'password'})
-    
+    class Meta:
+        model = User
+        feilds = ('useranme','password','email')
+
+class RegistrationSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = User 
+        fields = ('username', 'password')
+
 class QuestionSerializer(serializers.Serializer):
     '''
     Serializer for stalker_api/models/Question class
