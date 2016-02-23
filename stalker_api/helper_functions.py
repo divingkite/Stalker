@@ -3,7 +3,6 @@ import bs4
 import json
 import socks
 import socket
-from thread import start_new_thread as new_thread
 from stalker_api.models import *
 
 
@@ -18,24 +17,61 @@ def get_link_fileptr(url):
     '''
     For fetching content from a url.
     '''
-    connectTor()
-        
+    #connectTor()      
+    #select connection from either proxy or tor/withoutproxy
     #proxy = urllib2.ProxyHandler( { 'http' : 'http://Username:Password@ProxyServer:Port' , 'https' : 'https://Username:Password@ProxyServer:Port' })
     auth = urllib2.HTTPBasicAuthHandler()
-    opener = urllib2.build_opener( auth, urllib2.HTTPHandler )       #select an opener as required.
+    #opener = urllib2.build_opener( auth, urllib2.HTTPHandler )       
+    #select this opener when using tor/noproxy.
+    
     #opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler )
+    #select this opener when using proxy.
+    urllib2.install_opener(opener)
+    try:
+        link_file = urllib2.urlopen(url)
+    except urllib2.URLError:
+        return get_link_fileptr(url)     #if any error occurs, then fetch again.
+    else:
+        return link_file                 #Success
+
+def check_codechef_handle(handle):
+    cc_url = 'https://www.codechef.com/users/%s'%handle
+    link_file = get_link_fileptr(cc_url)
+        
+    if "Programming Competition,Programming Contest" in BeautifulSoup(link_file.read()).title.string: 
+    # "...." is title of codechef home page, the page of redirection when a codechef url fetched doesn't exist.
+        return False
+    else:
+        return True
+
+def check_codeforces_handle(handle):
+    cf_url = 'http://www.codeforces.com/api/user.status?handle=%s'%handle
+    #connectTor()      
+    #select connection from either proxy or tor/withoutproxy
+    #proxy = urllib2.ProxyHandler( { 'http' : 'http://Username:Password@ProxyServer:Port' , 'https' : 'https://Username:Password@ProxyServer:Port' })
+    auth = urllib2.HTTPBasicAuthHandler()
+    #opener = urllib2.build_opener( auth, urllib2.HTTPHandler )       
+    #select this opener when using tor/noproxy.
+    
+    #opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler )
+    #select this opener when using proxy.
     urllib2.install_opener(opener)
     try:
         link_file = urllib2.urlopen(url)
     except urllib2.URLError as e:
-        if e.code == 400:                # if bad request error occurs, It occurs when a codeforces url which
-                                         # doesn't exist is fetched, A invalid cf_handle will raise this error.     
-            return None 
-    
-        return get_link_fileptr(url)     #if any other error occurs, then fetch again.
+        if e.code == 400:       # if bad request error occurs, It occurs when a codeforces url which
+                                # doesn't exist is fetched, A invalid cf_handle will raise this error.
+            return False
+        else:
+            link_file = urllib2.urlopen(url)
     else:
-        return link_file                 #Success
-
+        data = link_file.read()
+        data = json.loads(data)
+        if data['status'] == 'failed':  #incorrect handle name
+            return False
+        else:
+            return True
+            
 def get_cc_contest_list():
     '''
     Fetches list of all contest hosted on/by codechef.
@@ -53,15 +89,15 @@ def get_cc_contest_list():
     for td in tds:
         links = td.find_all('a')
         for link in links:
-            link = link.get('href')   #data is like written below
+            link = link.get('href')   #data is like written above
             if link.count('/') == 1:
                 cc_contest_list.append(link[1:])     #link is "/Contest-Name"
     cc_contest_list =  cc_contest_list[1:-2]         #some non-useful urls exist so removed those.
     for contest in cc_contest_list:
         try:
-            Contest.objects.get( site="CC",name = contest )
+            Contest.objects.get( site="Codechef",name = contest )
         except Contest.DoesNotExist:
-            cont = Contest( site="CC",name = contest )
+            cont = Contest( site="Codechef",name = contest )
             cont.save()
 
 def get_cf_contest_list():
@@ -80,16 +116,16 @@ def get_cf_contest_list():
         for contest in data['result']:
             if contest['phase'] == 'FINISHED' :
                 try:
-                    Contest.objects.get( name = contest['name'], site ="CF",contestId=contest['id'] )
+                    Contest.objects.get( name = contest['name'], site ="Codeforces",contestId=contest['id'] )
                 except Contest.DoesNotExist:
-                    cont = Contest( name = contest['name'] , site ="CF",contestId = contest['id'] )
+                    cont = Contest( name = contest['name'] , site ="Codeforces",contestId = contest['id'] )
                     cont.save()
 
 
 class codechef:
     def __init__(self,person):
         self.person = person         
-        self.handle_name = person.cc   #codechef handle name of the contact.
+        self.handle_name = person.codechef_handle   #codechef handle name of the contact.
         self.link_list = []            #links of all questions done by the contact.
 
     def get_list_of_links(self):
@@ -105,7 +141,7 @@ class codechef:
             for link in soup.find_all('a'):
                 link = link.get('href')   #data is like written below
                 if '/status/' in link:
-	                self.link_list.append(link)
+                    self.link_list.append(link)
         
     
     def get_list_of_ques(self):
@@ -124,9 +160,9 @@ class codechef:
                 '''
                 name = link_data[2][0:link_data[2].find(',')]
                 try:
-                    PracticeProb.objects.get( name = name,person = self.person,site='CC',link=link )
+                    PracticeProb.objects.get( name = name,person = self.person,site='Codechef',link=link )
                 except PracticeProb.DoesNotExist:
-                    prac_prob = PracticeProb( name = name,person = self.person,site='CC',link=link )
+                    prac_prob = PracticeProb( name = name,person = self.person,site='Codechef',link=link )
                     prac_prob.save()
                     
             elif len(link_data) == 4 :
@@ -134,13 +170,13 @@ class codechef:
                 Contest Problem
                 '''
                 contest_name = link_data[1]
-                cont = Contest.objects.filter( name=contest_name,site="CC" )
+                cont = Contest.objects.filter( name=contest_name,site="Codechef" )
                 name = link_data[3][0:link_data[3].find(',')]
                 
                 try:
                     Question.objects.get( name=name, person=self.person, contest=cont[0] )
                 except Question.DoesNotExist:
-                    chal_prob = Question( site='CC', name=name, link=link, person=self.person, contest=cont[0] )
+                    chal_prob = Question( site='Codechef', name=name, link=link, person=self.person, contest=cont[0] )
                     chal_prob.save()
                     
     def do_everything(self):
@@ -158,7 +194,7 @@ class HelperFunctions:
         To update information of all contacts.
         Used by update_info view.
         '''
-        people = Person.objects.all()
+        people = Person.objects.filter(owner=self.request.user)
         if people == []:
             cc_obj = {}
             cf_obj = {}
@@ -168,11 +204,11 @@ class HelperFunctions:
             for person in people:
                 cc_obj = codechef(person) 
                 #new_thread(cc_obj.do_everything,())      #use when multithreading is used.
-                if person.cc != None:
+                if person.codechef_handle != None:
                     cc_obj.do_everything()
                 cf_obj = codeforces(person)
                 #new_thread(cf_obj.do_everything,())     #use when multithreading is used.
-                if person.cf != None:
+                if person.codeforces_handle != None:
                     cf_obj.do_everything()
     
     def FetchContentForAPerson(self):
@@ -193,16 +229,21 @@ class HelperFunctions:
 class codeforces:
     def __init__(self,person):
         self.person = person
-        self.handle_name = person.cf
+        self.handle_name = person.codeforces_handle
         #self.rating_url = 'http://codeforces.com/api/user.rating?handle=%s'%self.handle_name
         self.prob_url = 'http://codeforces.com/api/user.status?handle=%s'%self.handle_name
         
     def get_data(self,url):
-        connectTor()
+        connectTor()      
+        #select connection from either proxy or tor/withoutproxy
         #proxy = urllib2.ProxyHandler( { 'http' : 'http://Username:Password@ProxyServer:Port' , 'https' : 'https://Username:Password@ProxyServer:Port' })
         auth = urllib2.HTTPBasicAuthHandler()
-        opener = urllib2.build_opener( auth, urllib2.HTTPHandler )       #select the opener as required.
-        #opener = urllib2.build_opener( proxy,auth, urllib2.HTTPHandler )
+        opener = urllib2.build_opener( auth, urllib2.HTTPHandler )       
+        #select this opener when using tor/noproxy.
+    
+        #opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler )
+        #select this opener when using proxy.
+        
         urllib2.install_opener(opener)
         try:
             link_file = urllib2.urlopen(url)
@@ -228,9 +269,9 @@ class codeforces:
                     index = i['problem']['index']
                     if i['author']['participantType'] == "PRACTICE":
                         try:
-                            PracticeProb.objects.get( name = name, person = self.person,site='CF', index =index )
+                            PracticeProb.objects.get( name = name, person = self.person,site='Codeforces', index =index )
                         except PracticeProb.DoesNotExist:
-                            prac_prob = PracticeProb( name = name, person = self.person,site='CF', index =index )
+                            prac_prob = PracticeProb( name = name, person = self.person,site='Codeforces', index =index )
                             prac_prob.save()
                     else:
                         cont = Contest.objects.get( contestId = contest_id )
@@ -271,4 +312,3 @@ class codeforces:
         print 'last done'
 
 '''
-
