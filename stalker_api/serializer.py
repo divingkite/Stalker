@@ -7,11 +7,11 @@ class PersonSerializer(serializers.Serializer):
     Serializer for stalker_api/models/Person class.
     '''
     pk = serializers.IntegerField(read_only=True)
-    cc = serializers.CharField(required=False, allow_blank=True, max_length=20)
-    cf = serializers.CharField(required=False, allow_blank=True, max_length=20)
+    codechef_handle = serializers.CharField(required=False, allow_blank=True, max_length=20)
+    codeforces_handle = serializers.CharField(required=False, allow_blank=True, max_length=20)
     name = serializers.CharField(required=True)
 
-class UserSerializer(serializers.Serializer):
+class UserSerializer(serializers.ModelSerializer):
     '''
     Serializer for django.contrib.auth.User class
     '''
