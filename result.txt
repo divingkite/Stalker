@@ -1,0 +1,78 @@
+Output of - /friend_list/ 
+{ 'persons' : [
+                 {
+                    "pk":27 ,
+                    "codechef_handle":"hiteshiitbhu",
+                    "codeforces_handle":"hiteshagarwal",
+                    "name":"hitesh"
+                  }
+                  {
+                  		other persons
+                  }
+              ] 
+}
+
+
+output of - /profile/27/
+
+{
+    "codechef_problems":
+       [ 
+              {
+              		"Contest name":"qwert",
+              		"questions":[
+               						{
+               					        "name":"",
+               					        "link":"",
+               					        "site":"",
+               					        "person":"",
+               					        "index":"",
+               					        "link":""	
+               						}	
+               						{other questions}				
+               					]
+               }
+              { other contests }
+       ] 
+    "codeforces_problems":
+        [
+              {"Contest name":"345","questions":[list of questions (same as above)]  }
+              {"":"","":""}
+        ]
+     }
+
+output of - /contest_performance/site/contest/
+
+[
+        {
+           "person":"",
+           "questions": [
+                           {
+               					        "name":"",
+               					        "link":"",
+               					        "site":"",
+               					        "person":"",
+               					        "index":"",
+               					        "link":""	
+               						}	
+               						{other questions}
+                        ]
+        }
+        etc..
+]
+
+output of - /search_contest/
+
+{
+  "contests": [
+                {
+                  "name":"",
+                  "contestId":"",
+                  "site":"",
+                  "pk":"",
+                  "questions":""
+                },
+                {other contests}
+              ]
+
+}
