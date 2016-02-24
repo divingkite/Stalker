@@ -29,8 +29,7 @@ def Registration(request):
     '''
     For registering new users.
     '''
-    data = JSONParser().parse(request)  
-    print data  
+    data = JSONParser().parse(request) 
     serializer = RegistrationSerializer(data=data) 
     if serializer.is_valid():
         data = serializer.data
@@ -161,7 +160,6 @@ def search_contestwise( request,site ):
     '''
     Gives list of all contest when site ( Codechef/Codeforces ) is provided
     '''
-    print request.user
     cons = Contest.objects.filter( site=site )
     serializer = ContestSerializer(cons,many=True)
     data = {'contests':serializer.data}
@@ -214,7 +212,6 @@ def update_a_person_info(request,person_id):
     except Person.DoesNotExist :
         return JSONResponse({"comment":"person doesn't exist"},status=status.HTTP_400_BAD_REQUEST)
     person = Person.objects.get(pk=person_id)
-    print person
     current = HelperFunctions(request,person_id)
     current.FetchContentForAPerson()
     

@@ -21,7 +21,7 @@ def get_link_fileptr(url):
     #select connection from either proxy or tor/withoutproxy
     #proxy = urllib2.ProxyHandler( { 'http' : 'http://Username:Password@ProxyServer:Port' , 'https' : 'https://Username:Password@ProxyServer:Port' })
     auth = urllib2.HTTPBasicAuthHandler()
-    #opener = urllib2.build_opener( auth, urllib2.HTTPHandler )       
+    opener = urllib2.build_opener( auth, urllib2.HTTPHandler )       
     #select this opener when using tor/noproxy.
     
     #opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler )
@@ -56,7 +56,7 @@ def check_codeforces_handle(handle):
     #select connection from either proxy or tor/withoutproxy
     #proxy = urllib2.ProxyHandler( { 'http' : 'http://Username:Password@ProxyServer:Port' , 'https' : 'https://Username:Password@ProxyServer:Port' })
     auth = urllib2.HTTPBasicAuthHandler()
-    #opener = urllib2.build_opener( auth, urllib2.HTTPHandler )       
+    opener = urllib2.build_opener( auth, urllib2.HTTPHandler )       
     #select this opener when using tor/noproxy.
     
     #opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler )
@@ -241,7 +241,7 @@ class codeforces:
         self.prob_url = 'http://codeforces.com/api/user.status?handle=%s'%self.handle_name
         
     def get_data(self,url):
-        connectTor()      
+        #connectTor()      
         #select connection from either proxy or tor/withoutproxy
         #proxy = urllib2.ProxyHandler( { 'http' : 'http://Username:Password@ProxyServer:Port' , 'https' : 'https://Username:Password@ProxyServer:Port' })
         auth = urllib2.HTTPBasicAuthHandler()

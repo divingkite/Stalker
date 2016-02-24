@@ -21,8 +21,8 @@ It is implemented with a simple REST API with Django, Django REST Framework and 
       urllib2
       BeautifulSoup4
 
-For further help on how to register your app and send request see help.txt.
-
+For further help on how to register your app and send request see help.md.
+For results of request see result.txt.
 
 #### Features can be integrated:
     - Filtering of questions done on a particular date.
