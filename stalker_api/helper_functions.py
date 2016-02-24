@@ -1,8 +1,8 @@
 import urllib2
 import bs4
 import json
-import socks
-import socket
+#import socks        import while using tor
+#import socket       import while using tor
 from stalker_api.models import *
 
 
