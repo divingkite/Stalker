@@ -19,7 +19,10 @@ It is implemented with a simple REST API with Django, Django REST Framework and 
       django-filter
       json
       urllib2
+      django-oauth-toolkit
       BeautifulSoup4
+      PySocks
+      install socket library if using tor
 
 For further help on how to register your app and send request see help.md.
 For results of request see result.txt.
