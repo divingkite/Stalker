@@ -37,7 +37,7 @@ def Registration(request):
         u = User.objects.create(username=data['username'])
         u.set_password(data['password'])
         u.save() 
-        return JSONResponse(serializer.data, status=status.HTTP_201_CREATED)
+        return JSONResponse({"comment":"User created"}, status=status.HTTP_201_CREATED)
     return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST ) 
 
 
@@ -51,7 +51,7 @@ def update_info(request):
     current.FetchContent()
     objs = Person.objects.filter(owner=request.user)
     serializer = PersonSerializer( objs, many=True)
-    return JSONResponse(serializer.data,status=status.HTTP_200_OK)
+    return JSONResponse({"comment":"database updated"},status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -86,7 +86,7 @@ def expand_list( request ):
                                          ,owner=request.user ) 
             p.save()
             data = { 'result':serializer.data }
-            return HttpResponse( status=status.HTTP_201_CREATED )
+            return JSONResponse( data,status=status.HTTP_201_CREATED )
         else:
             JSONResponse({"comment":"Incorrect handle name provided"},status=status.HTTP_406_NOT_ACCEPTABLE )        #not cottect details provided for handles
     return JSONResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -114,6 +114,19 @@ def delete_contact( request,person_id ):
 def profile( request,person_id ):
     '''
     Gives all questions done a particular contact provided its person_id/pk from Person class.
+    {
+    "codechef_problems":
+       [ 
+              {"Contest name":"qwert","questions":[list of questions]}
+              {"":"","":""}
+       ] 
+    "codeforces_problems":
+        [
+              {"Contest name":"345","questions":[list of questions] }
+              {"":"","":""}
+        ]
+     }
+
     '''
     try:
         Person.objects.get(owner=request.user,pk=person_id)
@@ -128,7 +141,7 @@ def profile( request,person_id ):
         ques = Question.objects.filter( contest = contest,person=person )
         if len(ques) != 0:
             serializer = QuestionSerializer(ques,many=True)
-            cf_obj.append( [ {'Contest name':contest.name},{'questions':serializer.data} ] )
+            cf_obj.append( {'Contest name':contest.contestId,'questions':serializer.data}  )
         
     cc_contest = Contest.objects.filter( site='Codechef' )
         
@@ -137,16 +150,10 @@ def profile( request,person_id ):
         ques = Question.objects.filter( contest = contest, person = person )
         if len(ques) != 0:
             serializer = QuestionSerializer(ques,many=True)
-            cc_obj.append( [ {'Contest name':contest.name},{'questions':serializer.data} ] )
-            
-        #cf_prac = PracticeProb.objects.filter( person = person,site='CF' )     #fetching all practice problems.
-        #cc_prac = PracticeProb.objects.filter( person = person,site='CC' )
+            cc_obj.append( [ {'Contest name':contest.name,'questions':serializer.data} ] )
         
-    return JSONResponse( { 'codeforces_problems' : cf_obj ,
-                               'codechef_problems' : cc_obj ,
-                               #'cc_data_prac' : cc_prac ,
-                               #'cf_data_prac' : cf_prac 
-                               },status=status.HTTP_200_OK )
+    return JSONResponse( { 'codeforces_problems' : cf_obj ,'codechef_problems' : cc_obj ,},
+                        status=status.HTTP_200_OK )
 
 @api_view( ['GET'] )
 @permission_classes((permissions.IsAuthenticated,TokenHasReadWriteScope, ))
@@ -167,6 +174,14 @@ def SearchForThisContest(request,site,contest):
     for codechef   : write contest name.
     for codeforces : write contestId.
     Fetches all the questions of all contacts when a contest in selected
+
+    [
+        {
+           "person":"hitesh",
+           "questions": [list of all questions]
+        }
+        etc..
+    ]
     '''
     questions_done_by_all_person = []
     try:
@@ -183,9 +198,9 @@ def SearchForThisContest(request,site,contest):
         ques = Question.objects.filter( person = person, contest = contest )
         qserializer = QuestionSerializer(ques,many=True)
         pserializer = PersonSerializer(person)
-        questions_done_by_all_person.append( [pserializer.data,qserializer.data] )
-        
-    return JSONResponse( questions_done_by_all_person ,status=status.HTTP_200_OK)
+        questions_done_by_all_person.append( { "person":pserializer.data,"questions":qserializer.data } )
+        data = {"result" : questions_done_by_all_person}
+    return JSONResponse( data ,status=status.HTTP_200_OK)
 
 @api_view( ['GET'] )
 @permission_classes((permissions.IsAuthenticated, TokenHasReadWriteScope,))
