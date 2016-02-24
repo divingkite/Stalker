@@ -3,6 +3,11 @@
   python manage.py makemigrations
   python manage.py migrate
   </pre>
+### For login in django admin:
+  <pre>
+  python manage.py createsuperuser
+  </pre>
+  after that enter your username,password in /admin/
 ### For develpoment purpose you can build a local server by running in stalksite directory:
   <pre>
   python manage.py runserver
