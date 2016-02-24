@@ -35,16 +35,22 @@ def get_link_fileptr(url):
         return link_file                 #Success
 
 def check_codechef_handle(handle):
+    if handle.strip() == "":
+        return True
+    handle = handle.strip()
     cc_url = 'https://www.codechef.com/users/%s'%handle
     link_file = get_link_fileptr(cc_url)
         
-    if "Programming Competition,Programming Contest" in BeautifulSoup(link_file.read()).title.string: 
+    if "Programming Competition,Programming Contest" in bs4.BeautifulSoup(link_file.read()).title.string: 
     # "...." is title of codechef home page, the page of redirection when a codechef url fetched doesn't exist.
         return False
     else:
         return True
 
 def check_codeforces_handle(handle):
+    if handle.strip() == "":
+        return True
+    handle = handle.strip()
     cf_url = 'http://www.codeforces.com/api/user.status?handle=%s'%handle
     #connectTor()      
     #select connection from either proxy or tor/withoutproxy
@@ -188,6 +194,7 @@ class codechef:
 class HelperFunctions:
     def __init__(self,request,person_id=None):
         self.request = request
+        self.person_id = person_id
 
     def FetchContent(self):
         '''
@@ -218,7 +225,7 @@ class HelperFunctions:
         '''
         get_cc_contest_list()
         get_cf_contest_list()
-        person = Person.objects.filter( pk=person_id )
+        person = Person.objects.filter( pk=self.person_id )[0]
         cc_obj = codechef( person ) 
         cc_obj.do_everything()
         cf_obj = codeforces(person)

@@ -1,0 +1,9 @@
+django==1.7.7
+django_oauth2_provider 
+djangorestframework
+markdown
+django-filter
+json
+urllib2
+bs4
+
